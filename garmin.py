@@ -18,6 +18,7 @@ from influxdb_client import InfluxDBClient, Point, WritePrecision
 from influxdb_client.client.write_api import SYNCHRONOUS
 import pandas as pd
 from dotenv import load_dotenv
+
 load_dotenv()
 
 username = os.environ.get('garmin_username')
@@ -170,7 +171,6 @@ def get_weight(client, start_date, stop_date):
     
     return weight_data
 
-
 def get_hrv_data(client, start_date, stop_date):
     """
     Get heart rate variability data from Garmin Connect
@@ -286,7 +286,6 @@ def get_activities(client, start_date, stop_date):
     #         activities_data.append(garmin_activities_to_activities_schema(response))
     # return activities_data
     
-
 def get_blood_pressures(client, start_date, stop_date):
     """
     Get blood pressure data from Garmin Connect
@@ -406,41 +405,62 @@ def garmin_sleep_to_sleep_schema(response):
     }
     
 if __name__ == "__main__":
-    client = authenticate(username, password)
-    today = datetime.date.today()
-    # 2 years ago
-    start_date = today - datetime.timedelta(days=365)
-    stop_date  = today - datetime.timedelta(days=364)
-    # data = get_hr_data(client, start_date, stop_date)
-    # data = get_weight(client, start_date, stop_date)
-    # data = get_hrv_data(client, start_date, stop_date)
-    # data = get_VO2Max(client, start_date, stop_date)
-    # data = get_activities(client, start_date, stop_date)
+    # client = authenticate(username, password)
+    # today = datetime.date.today()
+    # # 2 years ago
+    # start_date = today - datetime.timedelta(days=365)
+    # stop_date  = today - datetime.timedelta(days=1)
+    # # data = get_hr_data(client, start_date, stop_date)
+    # # data = get_weight(client, start_date, stop_date)
+    # # data = get_hrv_data(client, start_date, stop_date)
+    # # data = get_VO2Max(client, start_date, stop_date)
+    # # data = get_activities(client, start_date, stop_date)
     # data = get_blood_pressures(client, start_date, stop_date)
-    data = get_garmin_sleep_data(client, start_date, stop_date)
-    [print(d) for d in data]
+    # # data = get_garmin_sleep_data(client, start_date, stop_date)
+    # [print(d) for d in data]
     
-    # # # write to json file
-    # # with open("blood_pressure.json", "w") as f:
-    # #     json.dump(data, f)
+    # # write to json file
+    # with open("blood_pressure.json", "w") as f:
+    #     json.dump(data, f)
     
-    # # read from json file
-    # with open("blood_pressure.json", "r") as f:
-    #     data = json.load(f)
+    # read from json file
+    with open("blood_pressure.json", "r") as f:
+        data = json.load(f)
         
     
 
-    # # plot the blood pressure data with plotly. systolic pressure on the y axis and diastolic pressure on the x axis.
-    # # draw the box around the normal range, which is 120/80.
+    # plot the blood pressure data with plotly. systolic pressure on the y axis and diastolic pressure on the x axis.
+    # draw the box around the normal range, which is 120/80.
     
-    # systolic = [d["fields"]["systolic"] for d in data]
-    # diastolic = [d["fields"]["diastolic"] for d in data]
-    # date_time = [d["time"] for d in data]
+    systolic = [d["fields"]["systolic"] for d in data]
+    diastolic = [d["fields"]["diastolic"] for d in data]
+    date_time = [d["time"] for d in data]
     
 
     
     
-    # fig = go.Figure()
+    fig = go.Figure()
+    
+    # draw a rounded rectangle 
+    for i in range(len(systolic)):
+        fig.add_shape(type="rect",
+            x0=date_time[i], y0=diastolic[i], x1=date_time[i], y1=systolic[i],
+            line=dict(color="red", width=10),
+            fillcolor="red",
+            opacity=1,
+            layer="below"
+        )
+            
+        
+        
+    
+    fig.add_trace(go.Scatter(x=date_time, y=[0 for _ in range(len(date_time))], mode="lines", line=dict(color="white", width=0.5)))
+    
+        
+        
+    fig.show()
+    
+    
     
     # # create a box around the normal range
     # fig.add_shape(type="rect",

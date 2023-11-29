@@ -23,8 +23,10 @@ def writeHRToParquet(client, start_date, stop_date):
     #write to parquet
     df.to_parquet("heartrate.parquet")
     
-
     
+
+
+
     
 if __name__ == "__main__":
     
@@ -55,8 +57,8 @@ if __name__ == "__main__":
     # data = garmin.get_blood_pressures(garmin_client, start_date, stop_date)
     # influxBackup.backupData(influxdb_client, data)
 
-    data = garmin.get_garmin_sleep_data(garmin_client, start_date, stop_date)
-    influxBackup.backupData(influxdb_client, data)
+    # data = garmin.get_garmin_sleep_data(garmin_client, start_date, stop_date)
+    # influxBackup.backupData(influxdb_client, data)
     
     # writeHRToParquet(influxdb_client, start_date, stop_date)
     
