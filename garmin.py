@@ -403,25 +403,85 @@ def garmin_sleep_to_sleep_schema(response):
             'deepPercentage': deepPercentage, 
         }
     }
+
+def sendWeightToObsidinan(data):
+    for d in data:
+        # write weight to file and create it if does not exist
+        with open(f"G:\\My Drive\\nean\\Health\\{d['time']}.md", "a+") as f:
+            weight = float(d['fields']['weight']) / 1000
+            line = f"#weight:{weight}\n"
+            # check if line already exists
+            weight_exists = False
+            for l in f.readlines():
+                print(l)
+                if "weight" in l:
+                    weight_exists = True
+            if not weight_exists:
+                f.write(line)
+
+def sendSleepToObsidinan(data):
+    for d in data:
+        with open(f"G:\\My Drive\\nean\\Health\\{d['time']}.md", "a+") as f:
+            sleep_score = d['fields']['overallScore']
+            line = f"#sleep_score:{sleep_score}\n"
+            # check if line already exists
+            if "sleep_score" not in f.readlines():
+                f.write(line)                
+                
+def get_personal_info(client):
+    """
+    Get personal info from Garmin Connect
     
+    Args:
+        client: Garmin client
+    Returns:
+        personal_info: list of personal info using the personal_info_schema
+    """
+    garmin_connect_user_settings_url = (
+            "/userprofile-service/userprofile/user-settings"
+        )
+    response = client.connectapi(garmin_connect_user_settings_url)
+    print("Getting personal info")
+    if response is None or len(response) == 0:
+        print("No personal info data")
+    else:
+        personal_info = [garmin_personal_info_to_personal_info_schema(response)]
+    return personal_info                
+
+# {'id': 109015146, 'userData': {'gender': 'MALE', 'weight': 63999.0, 'height': 170.0, 'timeFormat': 'time_twenty_four_hr', 'birthDate': '1997-07-05', 'measurementSystem': 'metric', 'activityLevel': 6, 'handedness': 'RIGHT', 'powerFormat': {'formatId': 30, 'formatKey': 'watt', 'minFraction': 0, 'maxFraction': 0, 'groupingUsed': True, 'displayFormat': None}, 'heartRateFormat': {'formatId': 21, 'formatKey': 'bpm', 'minFraction': 0, 'maxFraction': 0, 'groupingUsed': False, 'displayFormat': None}, 'firstDayOfWeek': {'dayId': 3, 'dayName': 'monday', 'sortOrder': 3, 'isPossibleFirstDay': True}, 'vo2MaxRunning': 52.0, 'vo2MaxCycling': None, 'lactateThresholdSpeed': 0.341599988937378, 'lactateThresholdHeartRate': None, 'diveNumber': None, 'intensityMinutesCalcMethod': 'AUTO', 'moderateIntensityMinutesHrZone': 3, 'vigorousIntensityMinutesHrZone': 4, 'hydrationMeasurementUnit': 'milliliter', 'hydrationContainers': [{'name': None, 'volume': 600, 'unit': 'milliliter'}, {'name': None, 'volume': 1000, 'unit': 'milliliter'}, {'name': None, 'volume': 1500, 'unit': 'milliliter'}], 'hydrationAutoGoalEnabled': True, 'firstbeatMaxStressScore': None, 'firstbeatCyclingLtTimestamp': None, 'firstbeatRunningLtTimestamp': 1069450064, 'thresholdHeartRateAutoDetected': True, 'ftpAutoDetected': None, 'trainingStatusPausedDate': None, 'weatherLocation': {'useFixedLocation': None, 'latitude': None, 'longitude': None, 'locationName': None, 'isoCountryCode': None, 'postalCode': None}, 'golfDistanceUnit': 'statute_us', 'golfElevationUnit': None, 'golfSpeedUnit': None, 'externalBottomTime': None, 'availableTrainingDays': ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'], 'preferredLongTrainingDays': []}, 'userSleep': {'sleepTime': 77400, 'defaultSleepTime': False, 'wakeTime': 19800, 'defaultWakeTime': False}, 'connectDate': None, 'sourceType': None, 'userSleepWindows': [{'sleepWindowFrequency': 'SUNDAY', 'startSleepTimeSecondsFromMidnight': 77400, 'endSleepTimeSecondsFromMidnight': 19800}, {'sleepWindowFrequency': 'MONDAY', 'startSleepTimeSecondsFromMidnight': 77400, 'endSleepTimeSecondsFromMidnight': 19800}, {'sleepWindowFrequency': 'TUESDAY', 'startSleepTimeSecondsFromMidnight': 77400, 'endSleepTimeSecondsFromMidnight': 19800}, {'sleepWindowFrequency': 'WEDNESDAY', 'startSleepTimeSecondsFromMidnight': 77400, 'endSleepTimeSecondsFromMidnight': 19800}, {'sleepWindowFrequency': 'THURSDAY', 'startSleepTimeSecondsFromMidnight': 77400, 'endSleepTimeSecondsFromMidnight': 19800}, {'sleepWindowFrequency': 'FRIDAY', 'startSleepTimeSecondsFromMidnight': 77400, 'endSleepTimeSecondsFromMidnight': 19800}, {'sleepWindowFrequency': 'SATURDAY', 'startSleepTimeSecondsFromMidnight': 77400, 'endSleepTimeSecondsFromMidnight': 19800}, {'sleepWindowFrequency': 'DAILY', 'startSleepTimeSecondsFromMidnight': 77400, 'endSleepTimeSecondsFromMidnight': 19800}]}
+def garmin_personal_info_to_personal_info_schema(response):
+    return {
+        "measurement": "PersonalInfo",
+        "fields": {
+            "gender": response["userData"]["gender"],
+            "weight": response["userData"]["weight"],
+            "height": response["userData"]["height"],
+            "birthDate": response["userData"]["birthDate"],
+            "handness": response["userData"]["handedness"]
+        }
+    }
+
+                
 if __name__ == "__main__":
-    # client = authenticate(username, password)
-    # today = datetime.date.today()
+    client = authenticate(username, password)
+    today = datetime.date.today()
     # # 2 years ago
-    # start_date = today - datetime.timedelta(days=365)
-    # stop_date  = today - datetime.timedelta(days=1)
+    start_date = today - datetime.timedelta(days=50)
+    stop_date  = today - datetime.timedelta(days=1)
     # # data = get_hr_data(client, start_date, stop_date)
-    # # data = get_weight(client, start_date, stop_date)
+    # data = get_weight(client, start_date, stop_date)
     # # data = get_hrv_data(client, start_date, stop_date)
     # # data = get_VO2Max(client, start_date, stop_date)
     # # data = get_activities(client, start_date, stop_date)
     # data = get_blood_pressures(client, start_date, stop_date)
-    # # data = get_garmin_sleep_data(client, start_date, stop_date)
+    # data = get_garmin_sleep_data(client, start_date, stop_date)
+    # data = get_personal_info(client)
+    # print(data)
     # [print(d) for d in data]
     
-    # # write to json file
-    # with open("blood_pressure.json", "w") as f:
-    #     json.dump(data, f)
+    # # # write to json file
+    # # with open("blood_pressure.json", "w") as f:
+    # #     json.dump(data, f)
     
     # read from json file
     with open("blood_pressure.json", "r") as f:
@@ -441,104 +501,104 @@ if __name__ == "__main__":
     
     fig = go.Figure()
     
-    # draw a rounded rectangle 
-    for i in range(len(systolic)):
-        fig.add_shape(type="rect",
-            x0=date_time[i], y0=diastolic[i], x1=date_time[i], y1=systolic[i],
-            line=dict(color="red", width=10),
-            fillcolor="red",
-            opacity=1,
-            layer="below"
-        )
+    # # draw a rounded rectangle 
+    # for i in range(len(systolic)):
+    #     fig.add_shape(type="rect",
+    #         x0=date_time[i], y0=diastolic[i], x1=date_time[i], y1=systolic[i],
+    #         line=dict(color="red", width=10),
+    #         fillcolor="red",
+    #         opacity=1,
+    #         layer="below"
+    #     )
             
         
         
     
-    fig.add_trace(go.Scatter(x=date_time, y=[0 for _ in range(len(date_time))], mode="lines", line=dict(color="white", width=0.5)))
+    # fig.add_trace(go.Scatter(x=date_time, y=[0 for _ in range(len(date_time))], mode="lines", line=dict(color="white", width=0.5)))
     
         
         
-    fig.show()
+    # fig.show()
     
     
     
-    # # create a box around the normal range
-    # fig.add_shape(type="rect",
-    #     x0=0, y0=0, x1=100, y1=200,
-    #     line=dict(color="red"),
-    #     fillcolor="#ab0808",
-    #     opacity=1,
-    #     layer="below"
-    # )
-    # fig.add_shape(type="rect",
-    #     x0=0, y0=0, x1=90, y1=140,
-    #     line=dict(color="#BA551F"),#orange
-    #     fillcolor="#763308",
-    #     opacity=1,
-    #     layer="below"
-    # )
-    # fig.add_shape(type="rect",
-    #     x0=0, y0=0, x1=80, y1=120,
-    #     line=dict(color="#0A6B2D"),#green
-    #     fillcolor="#064B1F",
-    #     opacity=1,
-    #     layer="below"
-    # )
-    # fig.add_shape(type="rect",
-    #     x0=0, y0=0, x1=60, y1=90,
-    #     line=dict(color="blue"),
-    #     fillcolor="#1c20b7",
-    #     opacity=1,
-    #     layer="below"
-    # )
-    # # plot the systolic and diastolic data add date_time as marker text. marker color is black, 0.5 thinkness
-    # fig.add_trace(go.Scatter(x=diastolic, y=systolic, mode="markers", marker=dict(color="black", size=3), text=date_time))
-    # fig.add_trace(go.Scatter(x=diastolic, y=systolic, mode="lines", line=dict(color="black", width=0.5)))
+    # create a box around the normal range
+    fig.add_shape(type="rect",
+        x0=0, y0=0, x1=100, y1=200,
+        line=dict(color="red"),
+        fillcolor="#ab0808",
+        opacity=1,
+        layer="below"
+    )
+    fig.add_shape(type="rect",
+        x0=0, y0=0, x1=90, y1=140,
+        line=dict(color="#BA551F"),#orange
+        fillcolor="#763308",
+        opacity=1,
+        layer="below"
+    )
+    fig.add_shape(type="rect",
+        x0=0, y0=0, x1=80, y1=120,
+        line=dict(color="#0A6B2D"),#green
+        fillcolor="#064B1F",
+        opacity=1,
+        layer="below"
+    )
+    fig.add_shape(type="rect",
+        x0=0, y0=0, x1=60, y1=90,
+        line=dict(color="blue"),
+        fillcolor="#1c20b7",
+        opacity=1,
+        layer="below"
+    )
+    # plot the systolic and diastolic data add date_time as marker text. marker color is black, 0.5 thinkness
+    fig.add_trace(go.Scatter(x=diastolic, y=systolic, mode="markers", marker=dict(color="black", size=3), text=date_time))
+    fig.add_trace(go.Scatter(x=diastolic, y=systolic, mode="lines", line=dict(color="black", width=0.5)))
 
-    # # compute average location of the data points
-    # avg_systolic = np.mean(systolic)
-    # avg_diastolic = np.mean(diastolic)
+    # compute average location of the data points
+    avg_systolic = np.mean(systolic)
+    avg_diastolic = np.mean(diastolic)
     
  
-    # # draw circle around ellipse that contains 95% of the data
+    # draw circle around ellipse that contains 95% of the data
     
-    # # compute covariance matrix
-    # cov = np.cov(systolic, diastolic)
-    # # compute eigenvalues and eigenvectors
-    # eigenvalues, eigenvectors = np.linalg.eig(cov)
-    # # compute the angle of the ellipse
-    # angle = np.arctan(eigenvectors[1][0]/eigenvectors[0][0])
-    # # compute the length of the major and minor axis
-    # major_axis = np.sqrt(eigenvalues[0])
-    # minor_axis = np.sqrt(eigenvalues[1])
-    # # compute the ellipse
-    # t = np.linspace(0, 2*np.pi, 100)
-    # x = major_axis * np.cos(t)
-    # y = minor_axis * np.sin(t)
-    # # rotate the ellipse
-    # x_rotated = x*np.cos(angle) - y*np.sin(angle)
-    # y_rotated = x*np.sin(angle) + y*np.cos(angle)
-    # # compute the center of the ellipse
-    # center = np.array([avg_diastolic, avg_systolic])
-    # # compute the ellipse
-    # ellipse = np.array([x_rotated, y_rotated]).T + center
-    # # plot the ellipse
-    # # fig.add_trace(go.Scatter(x=ellipse[:,0], y=ellipse[:,1], mode="lines", line=dict(color="red", width=1)))
-    # fig.add_shape(type="path", 
-    #               path="M " + " L ".join([str(x) + " " + str(y) for x, y in ellipse]), 
-    #               line=dict(color="grey", width=1),
-    #                       fillcolor="grey",
-    #                       opacity=0.2)
+    # compute covariance matrix
+    cov = np.cov(systolic, diastolic)
+    # compute eigenvalues and eigenvectors
+    eigenvalues, eigenvectors = np.linalg.eig(cov)
+    # compute the angle of the ellipse
+    angle = np.arctan(eigenvectors[1][0]/eigenvectors[0][0])
+    # compute the length of the major and minor axis
+    major_axis = np.sqrt(eigenvalues[0])
+    minor_axis = np.sqrt(eigenvalues[1])
+    # compute the ellipse
+    t = np.linspace(0, 2*np.pi, 100)
+    x = major_axis * np.cos(t)
+    y = minor_axis * np.sin(t)
+    # rotate the ellipse
+    x_rotated = x*np.cos(angle) - y*np.sin(angle)
+    y_rotated = x*np.sin(angle) + y*np.cos(angle)
+    # compute the center of the ellipse
+    center = np.array([avg_diastolic, avg_systolic])
+    # compute the ellipse
+    ellipse = np.array([x_rotated, y_rotated]).T + center
+    # plot the ellipse
+    # fig.add_trace(go.Scatter(x=ellipse[:,0], y=ellipse[:,1], mode="lines", line=dict(color="red", width=1)))
+    fig.add_shape(type="path", 
+                  path="M " + " L ".join([str(x) + " " + str(y) for x, y in ellipse]), 
+                  line=dict(color="grey", width=1),
+                          fillcolor="grey",
+                          opacity=0.2)
     
-    # # set axis range
-    # fig.update_xaxes(range=[0, 100])
-    # fig.update_yaxes(range=[0, 200])
-    # fig.update_yaxes(dtick=20)
-    # fig.update_xaxes(dtick=20)
-    # # square the axis
-    # fig.update_layout(width=800, height=800)
-    # # grid off
-    # fig.update_xaxes(showgrid=False)
-    # fig.update_yaxes(showgrid=False)
-    # fig.show()
+    # set axis range
+    fig.update_xaxes(range=[0, 100])
+    fig.update_yaxes(range=[0, 200])
+    fig.update_yaxes(dtick=20)
+    fig.update_xaxes(dtick=20)
+    # square the axis
+    fig.update_layout(width=800, height=800)
+    # grid off
+    fig.update_xaxes(showgrid=False)
+    fig.update_yaxes(showgrid=False)
+    fig.show()
     

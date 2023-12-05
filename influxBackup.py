@@ -7,7 +7,11 @@ from tqdm import tqdm
 from datetime import datetime, timedelta
 import plotly.graph_objects as go
 
-token = "A49iA1gHiDq0px7bGAig6ldxcWy9f-eYx0Dw3Ir4FHq4sr2_mCj1ZV3QThGOW6HcCg2mx0l2l9V8h3rEoZBV2w=="
+from dotenv import load_dotenv
+
+load_dotenv()
+
+token = os.environ.get("influxdb_token")
 org = "garmin_ws"
 url = "http://localhost:8086"
 bucket="garmin"
@@ -88,13 +92,12 @@ def get(client, measurements, fields, startDate, stopDate, bucket=bucket, org=or
             query += f' or r._field == "{field}"'
             
     query += ')'
-    print(query)
+    # print(query)
     tables = query_api.query(query)
     return tables
 
-def populate_df(client, selected_measurements, selected_fields):
-    start = datetime.today() - timedelta(days=365)
-    stop = datetime.today() - timedelta(days=1)
+def populate_df(client, selected_measurements, selected_fields,start, stop):
+    
     start = start.isoformat("T") + "Z"
     stop = stop.isoformat("T") + "Z"
     tables =  get(client, selected_measurements, selected_fields, start, stop)
@@ -133,8 +136,8 @@ if __name__ == "__main__":
     # print(getListOfMeasurements(client))
     start = datetime.today() - timedelta(days=365)
     stop = datetime.today() - timedelta(days=1)
-    start = start.isoformat("T") + "Z"
-    stop = stop.isoformat("T") + "Z"
+    # start = start.isoformat("T") + "Z"
+    # stop = stop.isoformat("T") + "Z"
     # {'BloodPressure': ['diastolic', 'pulse', 'systolic'], 'HeartRateMetrics': ['lastSevenDaysAvgRestingHeartRate', 'restingHeartRate'], 'RealTimeHeartRate': ['heartRateValue'], 'Sleep': ['averageRespirationValue', 'averageSpO2HRSleep', 'averageSpO2Value', 'avgSleepStress', 'awakeCount', 'awakeSleepSeconds', 'calendarDate', 'deepPercentage', 'deepSleepSeconds', 'highestRespirationValue', 'highestSpO2Value', 'lightPercentage', 'lightSleepSeconds', 'lowestRespirationValue', 'lowestSpO2Value', 'overallScore', 'remPercentage', 'remSleepSeconds', 'sleepEndTimestampLocal', 'sleepStartTimestampLocal', 'sleepTimeSeconds'], 'Weight': ['weight'], 'hrv': ['balancedLow', 'balancedUpper', 'lastNightAvg', 'weeklyAvg'], 'vo2max': ['vo2MaxPreciseValue']}
     # tables = get(client, ["HeartRateMetrics", "BloodPressure"], ["restingHeartRate", "systolic", "diastolic"], start, stop)
     # data = {}
@@ -157,11 +160,15 @@ if __name__ == "__main__":
     #     df = df.sort_index()
     #     dfs.append(df)
     
-    dfs = populate_df(client, ["HeartRateMetrics", "BloodPressure"], ["restingHeartRate", "systolic", "diastolic"])
+    dfs = populate_df(client, ["HeartRateMetrics", "BloodPressure"], ["restingHeartRate", "systolic", "diastolic"], start, stop)
         
     #plot the data
     fig = go.Figure()
     for df in dfs:
         fig.add_trace(go.Scatter(x=df.index, y=df[df.columns[0]], mode="lines", name=df.columns[0]))
     fig.show()
+    # save figure
+    # fig.write_image("fig1.png")
+    #save to html
+    fig.write_html("fig1.html")
     client.close()

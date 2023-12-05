@@ -60,9 +60,12 @@ if __name__ == "__main__":
     # data = garmin.get_garmin_sleep_data(garmin_client, start_date, stop_date)
     # influxBackup.backupData(influxdb_client, data)
     
+    data = garmin.get_personal_info(garmin_client)
+    influxBackup.backupData(influxdb_client, data)
+    
     # writeHRToParquet(influxdb_client, start_date, stop_date)
     
-    # influxdb_client.close()
+    influxdb_client.close()
     
     
     # #calculate the time it takes to run the script
