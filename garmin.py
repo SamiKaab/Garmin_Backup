@@ -305,7 +305,7 @@ def get_blood_pressures(client, start_date, stop_date):
     else:
         blood_pressure_data = garmin_blood_pressure_to_blood_pressure_schema(response)
     return blood_pressure_data
-
+#{data:values ....}
 def get_garmin_sleep_data(client, start_date, stop_date):
     """
     Get sleep data from Garmin Connect
@@ -463,11 +463,11 @@ def garmin_personal_info_to_personal_info_schema(response):
 
                 
 if __name__ == "__main__":
-    client = authenticate(username, password)
-    today = datetime.date.today()
-    # # 2 years ago
-    start_date = today - datetime.timedelta(days=50)
-    stop_date  = today - datetime.timedelta(days=1)
+    # # # # # # # # # client = authenticate(username, password)
+    # # # # # # # # # today = datetime.date.today()
+    # # # # # # # # # # # 2 years ago
+    # # # # # # # # # start_date = today - datetime.timedelta(days=50)
+    # # # # # # # # # stop_date  = today - datetime.timedelta(days=1)
     # # data = get_hr_data(client, start_date, stop_date)
     # data = get_weight(client, start_date, stop_date)
     # # data = get_hrv_data(client, start_date, stop_date)
@@ -521,74 +521,88 @@ if __name__ == "__main__":
     # fig.show()
     
     
-    
+    colors = ["#3498db", "#1FC253", "#ff9800", "#e74c3c"]
+
+
+
     # create a box around the normal range
     fig.add_shape(type="rect",
         x0=0, y0=0, x1=100, y1=200,
-        line=dict(color="red"),
-        fillcolor="#ab0808",
+        line=dict(color=colors[3]),#red
+        fillcolor=colors[3],
         opacity=1,
         layer="below"
     )
     fig.add_shape(type="rect",
         x0=0, y0=0, x1=90, y1=140,
-        line=dict(color="#BA551F"),#orange
-        fillcolor="#763308",
+        line=dict(color=colors[2]),#orange
+        fillcolor=colors[2],
         opacity=1,
         layer="below"
     )
     fig.add_shape(type="rect",
         x0=0, y0=0, x1=80, y1=120,
-        line=dict(color="#0A6B2D"),#green
-        fillcolor="#064B1F",
+        line=dict(color=colors[1]),#green
+        fillcolor=colors[1],
         opacity=1,
         layer="below"
     )
     fig.add_shape(type="rect",
         x0=0, y0=0, x1=60, y1=90,
-        line=dict(color="blue"),
-        fillcolor="#1c20b7",
+        line=dict(color=colors[0]),#blue
+        fillcolor=colors[0],
         opacity=1,
         layer="below"
     )
     # plot the systolic and diastolic data add date_time as marker text. marker color is black, 0.5 thinkness
-    fig.add_trace(go.Scatter(x=diastolic, y=systolic, mode="markers", marker=dict(color="black", size=3), text=date_time))
-    fig.add_trace(go.Scatter(x=diastolic, y=systolic, mode="lines", line=dict(color="black", width=0.5)))
+    fig.add_trace(go.Scatter(x=diastolic, y=systolic, mode="markers", marker=dict(color="black", size=5), text=date_time))
+    # add axis labels
+    fig.update_layout(
+        xaxis_title="Diastolic",
+        yaxis_title="Systolic",
+        font=dict(
+            family="Courier New, monospace",
+            size=18,
+            color="RebeccaPurple"
+        )
+    )
+    
+    # fig.add_trace(go.Scatter(x=diastolic, y=systolic, mode="lines", line=dict(color="black", width=0.5)))
 
-    # compute average location of the data points
-    avg_systolic = np.mean(systolic)
-    avg_diastolic = np.mean(diastolic)
+    # # compute average location of the data points
+    # avg_systolic = np.mean(systolic)
+    # avg_diastolic = np.mean(diastolic)
     
  
-    # draw circle around ellipse that contains 95% of the data
+    # # draw circle around ellipse that contains 95% of the data
     
-    # compute covariance matrix
-    cov = np.cov(systolic, diastolic)
-    # compute eigenvalues and eigenvectors
-    eigenvalues, eigenvectors = np.linalg.eig(cov)
-    # compute the angle of the ellipse
-    angle = np.arctan(eigenvectors[1][0]/eigenvectors[0][0])
-    # compute the length of the major and minor axis
-    major_axis = np.sqrt(eigenvalues[0])
-    minor_axis = np.sqrt(eigenvalues[1])
-    # compute the ellipse
-    t = np.linspace(0, 2*np.pi, 100)
-    x = major_axis * np.cos(t)
-    y = minor_axis * np.sin(t)
-    # rotate the ellipse
-    x_rotated = x*np.cos(angle) - y*np.sin(angle)
-    y_rotated = x*np.sin(angle) + y*np.cos(angle)
-    # compute the center of the ellipse
-    center = np.array([avg_diastolic, avg_systolic])
-    # compute the ellipse
-    ellipse = np.array([x_rotated, y_rotated]).T + center
-    # plot the ellipse
-    # fig.add_trace(go.Scatter(x=ellipse[:,0], y=ellipse[:,1], mode="lines", line=dict(color="red", width=1)))
-    fig.add_shape(type="path", 
-                  path="M " + " L ".join([str(x) + " " + str(y) for x, y in ellipse]), 
-                  line=dict(color="grey", width=1),
-                          fillcolor="grey",
-                          opacity=0.2)
+    # # compute covariance matrix
+    # cov = np.cov(systolic, diastolic)
+    # # compute eigenvalues and eigenvectors
+    # eigenvalues, eigenvectors = np.linalg.eig(cov)
+    # # compute the angle of the ellipse
+    # angle = np.arctan(eigenvectors[1][0]/eigenvectors[0][0])
+    # # compute the length of the major and minor axis
+    # major_axis = np.sqrt(eigenvalues[0])
+    # minor_axis = np.sqrt(eigenvalues[1])
+    # # compute the ellipse
+    # t = np.linspace(0, 2*np.pi, 100)
+    # x = major_axis * np.cos(t)
+    # y = minor_axis * np.sin(t)
+    # # rotate the ellipse
+    # x_rotated = x*np.cos(angle) - y*np.sin(angle)
+    # y_rotated = x*np.sin(angle) + y*np.cos(angle)
+    # # compute the center of the ellipse
+    # center = np.array([avg_diastolic, avg_systolic])
+    # # compute the ellipse
+    # ellipse = np.array([x_rotated, y_rotated]).T + center
+    # # plot the ellipse
+    # # fig.add_trace(go.Scatter(x=ellipse[:,0], y=ellipse[:,1], mode="lines", line=dict(color="red", width=1)))
+    # fig.add_shape(type="path", 
+    #               path="M " + " L ".join([str(x) + " " + str(y) for x, y in ellipse]), 
+    #               line=dict(color="grey", width=1),
+    #                       fillcolor="grey",
+    #                       opacity=0.2)
     
     # set axis range
     fig.update_xaxes(range=[0, 100])

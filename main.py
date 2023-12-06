@@ -48,8 +48,8 @@ if __name__ == "__main__":
     # data = garmin.get_hrv_data(garmin_client, start_date, stop_date)
     # influxBackup.backupData(influxdb_client, data)
     
-    # data = garmin.get_weight(garmin_client, start_date, stop_date)
-    # influxBackup.backupData(influxdb_client, data)
+    data = garmin.get_weight(garmin_client, start_date, stop_date)
+    influxBackup.backupData(influxdb_client, data)
 
     # data = garmin.get_VO2Max(garmin_client, start_date, stop_date)
     # influxBackup.backupData(influxdb_client, data)
@@ -60,8 +60,8 @@ if __name__ == "__main__":
     # data = garmin.get_garmin_sleep_data(garmin_client, start_date, stop_date)
     # influxBackup.backupData(influxdb_client, data)
     
-    data = garmin.get_personal_info(garmin_client)
-    influxBackup.backupData(influxdb_client, data)
+    # data = garmin.get_personal_info(garmin_client)
+    # influxBackup.backupData(influxdb_client, data)
     
     # writeHRToParquet(influxdb_client, start_date, stop_date)
     
